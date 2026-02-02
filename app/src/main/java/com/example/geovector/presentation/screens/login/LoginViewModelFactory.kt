@@ -1,14 +1,17 @@
+package com.example.geovector.presentation.screens.login
+
+import LoginUserUseCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.geovector.presentation.screens.register.RegisterViewModel
 
-class RegisterViewModelFactory(
-    private val registerUseCase: RegisterUserUseCase
+class LoginViewModelFactory(
+    private val loginUseCase: LoginUserUseCase
 ) : ViewModelProvider.Factory {
+
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(RegisterViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return RegisterViewModel(registerUseCase) as T
+            return LoginViewModel(loginUseCase) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

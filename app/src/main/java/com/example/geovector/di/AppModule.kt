@@ -1,12 +1,13 @@
 package com.example.geovector.di
 
+import LoginUserUseCase
+import RegisterUserUseCase
 import android.content.Context
 import androidx.room.Room
 import com.example.geovector.data.local.db.AppDatabase
 import com.example.geovector.data.repository.AuthRepositoryImpl
 import com.example.geovector.domain.repository.AuthRepository
-import com.example.geovector.domain.usecase.LoginUserUseCase
-import com.example.geovector.domain.usecase.RegisterUserUseCase
+
 
 object AppModule {
 

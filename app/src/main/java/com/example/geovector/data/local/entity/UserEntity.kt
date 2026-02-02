@@ -6,11 +6,12 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "users",
-    indices = [Index(value = ["email"], unique = true)]
-)
+    indices = [Index(value = ["username"], unique = true)])
 data class UserEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val fullName: String,
-    val email: String,
+    val age: Int,
+    val birthDateMillis: Long,   // تاریخ تولد به میلی‌ثانیه (epoch)
+    val username: String,
     val passwordHash: String
 )

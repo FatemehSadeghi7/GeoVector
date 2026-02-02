@@ -4,9 +4,10 @@ import RegisterViewModelFactory
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -22,39 +23,82 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lint.kotlin.metadata.Visibility
 import com.example.geovector.di.AppModule
+import com.example.geovector.presentation.components.JalaliBirthDatePickerDialog
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     onRegisteredGoToLogin: () -> Unit
 ) {
-    // ✅ RTL فقط برای همین صفحه
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+
 
         val context = LocalContext.current.applicationContext
         val factory = remember {
             RegisterViewModelFactory(AppModule.provideRegisterUseCase(context))
         }
         val vm: RegisterViewModel = viewModel(factory = factory)
+        var showJalaliPicker by remember { mutableStateOf(false) }
+
+        if (showJalaliPicker) {
+            JalaliBirthDatePickerDialog(
+                initial = null,
+                onDismiss = { showJalaliPicker = false },
+                onConfirm = { j ->
+                    vm.onBirthDateJalaliSelected(j)
+                    showJalaliPicker = false
+                }
+            )
+        }
+
         val state by vm.state.collectAsState()
 
         val snackbarHostState = remember { SnackbarHostState() }
         var showPassword by remember { mutableStateOf(false) }
+        var showDatePicker by remember { mutableStateOf(false) }
 
-        // پیام‌ها به صورت Snackbar
+        // Snackbar message
         LaunchedEffect(state.message) {
-            val msg = state.message ?: return@LaunchedEffect
-            snackbarHostState.showSnackbar(message = msg)
+            state.message?.let { snackbarHostState.showSnackbar(it) }
+        }
+
+        // Date formatting
+        val dateText = remember(state.birthDateMillis) {
+            if (state.birthDateMillis <= 0L) "انتخاب تاریخ تولد"
+            else {
+                val df = SimpleDateFormat("yyyy/MM/dd", Locale("fa", "IR"))
+                df.format(Date(state.birthDateMillis))
+            }
+        }
+
+        // DatePicker dialog
+        if (showDatePicker) {
+            val datePickerState = rememberDatePickerState(
+                initialSelectedDateMillis = state.birthDateMillis.takeIf { it > 0L }
+            )
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        val selected = datePickerState.selectedDateMillis ?: 0L
+                        vm.onBirthDateChange(selected)
+                        showDatePicker = false
+                    }) { Text("تأیید") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) { Text("لغو") }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
         }
 
         Scaffold(
-            topBar = {
-                CenterAlignedTopAppBar(
-                    title = { Text("ثبت نام") }
-                )
-            },
+            topBar = { CenterAlignedTopAppBar(title = { Text("ثبت نام") }) },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { padding ->
 
@@ -62,11 +106,11 @@ fun RegisterScreen(
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize()
+                    .padding(16.dp)
             ) {
                 Card(
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .padding(16.dp)
                         .fillMaxWidth(),
                     shape = MaterialTheme.shapes.extraLarge,
                     elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
@@ -78,10 +122,11 @@ fun RegisterScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "حساب کاربری بسازید",
+                            text = "حساب جدید بسازید",
                             style = MaterialTheme.typography.titleLarge
                         )
 
+                        // Full name
                         OutlinedTextField(
                             value = state.fullName,
                             onValueChange = vm::onFullNameChange,
@@ -94,23 +139,56 @@ fun RegisterScreen(
                             )
                         )
 
+                        // Age
                         OutlinedTextField(
-                            value = state.email,
-                            onValueChange = vm::onEmailChange,
-                            label = { Text("ایمیل") },
-                            leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) },
+                            value = state.age,
+                            onValueChange = vm::onAgeChange,
+                            label = { Text("سن") },
+                            leadingIcon = { Icon(Icons.Filled.Tag, contentDescription = null) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Email,
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            )
+                        )
+                        OutlinedButton(
+                            onClick = { showJalaliPicker = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            // متن را از state.birthDateMillis نشان می‌دهیم (یا اگر خواستی Jalali string هم نگه می‌داریم)
+                            Text(if (state.birthDateMillis > 0L) "تاریخ تولد ثبت شد" else "انتخاب تاریخ تولد (شمسی)")
+                        }
+
+
+                        // Birth date picker button
+                       /* OutlinedButton(
+                            onClick = { showDatePicker = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Filled.Cake, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text(dateText)
+                        }*/
+
+                        // Username
+                        OutlinedTextField(
+                            value = state.username,
+                            onValueChange = vm::onUsernameChange,
+                            label = { Text("نام کاربری") },
+                            leadingIcon = { Icon(Icons.Filled.Tag, contentDescription = null) },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
                                 imeAction = ImeAction.Next
                             )
                         )
 
+                        // Password
                         OutlinedTextField(
                             value = state.password,
                             onValueChange = vm::onPasswordChange,
-                            label = { Text("پسورد") },
+                            label = { Text("رمز عبور") },
                             leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
                             trailingIcon = {
                                 IconButton(onClick = { showPassword = !showPassword }) {
@@ -120,7 +198,8 @@ fun RegisterScreen(
                                     )
                                 }
                             },
-                            visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                            visualTransformation =
+                                if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(
@@ -131,9 +210,12 @@ fun RegisterScreen(
 
                         Spacer(Modifier.height(4.dp))
 
+                        // Register button
                         Button(
                             onClick = { vm.submit(onRegisteredGoToLogin) },
-                            modifier = Modifier.fillMaxWidth().height(48.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
                             enabled = !state.isLoading
                         ) {
                             if (state.isLoading) {
@@ -147,7 +229,7 @@ fun RegisterScreen(
                             onClick = onRegisteredGoToLogin,
                             modifier = Modifier.align(Alignment.CenterHorizontally)
                         ) {
-                            Text("قبلاً حساب ساخته‌اید؟ ورود")
+                            Text("قبلاً حساب دارید؟ ورود")
                         }
                     }
                 }

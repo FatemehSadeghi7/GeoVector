@@ -8,12 +8,18 @@ import com.example.geovector.data.local.entity.UserEntity
 
 @Dao
 interface UserDao {
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(user: UserEntity): Long
 
-    @Query("SELECT * FROM users WHERE email = :email LIMIT 1")
-    suspend fun findByEmail(email: String): UserEntity?
+    @Query("SELECT * FROM users WHERE username = :username LIMIT 1")
+    suspend fun findByUsername(username: String): UserEntity?
 
-    @Query("SELECT * FROM users WHERE email = :email AND passwordHash = :hash LIMIT 1")
-    suspend fun findByEmailAndPasswordHash(email: String, hash: String): UserEntity?
+    @Query("""
+    SELECT * FROM users
+    WHERE username = :username
+      AND passwordHash = :hash
+    LIMIT 1
+""")
+    suspend fun loginByUsernamePassword(username: String, hash: String): UserEntity?
 }
