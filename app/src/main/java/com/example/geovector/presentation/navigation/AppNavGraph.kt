@@ -1,5 +1,6 @@
 package com.example.geovector.presentation.navigation
 
+import MapScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -17,11 +18,23 @@ fun AppNavGraph(nav: NavHostController) {
                 onRegister = { nav.navigate(Routes.REGISTER) }
             )
         }
-        composable(Routes.LOGIN) { LoginScreen() }
-        composable(Routes.REGISTER) { RegisterScreen(onRegisteredGoToLogin = {
-            nav.navigate(Routes.LOGIN) {
-                popUpTo(Routes.WELCOME) { inclusive = false }
-            }
-        }) }
+        composable(Routes.LOGIN) {
+            LoginScreen(onLoginSuccess = {
+                // After successful login, navigate to map screen
+                nav.navigate(Routes.MAP) {
+                    popUpTo(Routes.LOGIN) { inclusive = true } // Pop back to avoid returning to login screen
+                }
+            })
+        }
+        composable(Routes.REGISTER) {
+            RegisterScreen(onRegisteredGoToLogin = {
+                nav.navigate(Routes.LOGIN) {
+                    popUpTo(Routes.WELCOME) { inclusive = false }
+                }
+            })
+        }
+        composable(Routes.MAP) {
+            MapScreen()  // The screen to display map
+        }
     }
 }
