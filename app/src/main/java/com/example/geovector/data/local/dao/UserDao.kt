@@ -22,4 +22,22 @@ interface UserDao {
     LIMIT 1
 """)
     suspend fun loginByUsernamePassword(username: String, hash: String): UserEntity?
+    @Query("UPDATE users SET isLoggedIn = 1 WHERE username = :username")
+    suspend fun setLoggedIn(username: String)
+
+    @Query("UPDATE users SET isLoggedIn = 0 WHERE isLoggedIn = 1")
+    suspend fun logoutAll()
+
+    @Query("SELECT * FROM users WHERE isLoggedIn = 1 LIMIT 1")
+    suspend fun getLoggedInUser(): UserEntity?
+
+    @Query("DELETE FROM users")
+    suspend fun deleteAllUsers()
+
+    @Query("DELETE FROM users WHERE isLoggedIn = 1")
+    suspend fun deleteLoggedInUser()
+
+    @Query("DELETE FROM users WHERE username = :username")
+    suspend fun deleteByUsername(username: String)
 }
+

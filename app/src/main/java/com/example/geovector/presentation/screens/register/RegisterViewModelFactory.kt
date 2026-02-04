@@ -1,6 +1,8 @@
+package com.example.geovector.presentation.screens.register
+
+import RegisterUserUseCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.geovector.presentation.screens.register.RegisterViewModel
 
 class RegisterViewModelFactory(
     private val registerUseCase: RegisterUserUseCase

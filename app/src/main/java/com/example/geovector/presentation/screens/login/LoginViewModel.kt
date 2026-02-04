@@ -4,6 +4,7 @@ import LoginUserUseCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.geovector.core.result.AppResult
+import com.example.geovector.data.local.dao.UserDao
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -16,7 +17,8 @@ data class LoginUiState(
 )
 
 class LoginViewModel(
-    private val loginUseCase: LoginUserUseCase
+    private val loginUseCase: LoginUserUseCase,
+    private val userDao: UserDao
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LoginUiState())
@@ -38,6 +40,8 @@ class LoginViewModel(
 
             when (val res = loginUseCase(username = s.username, password = s.password)) {
                 is AppResult.Success -> {
+                    userDao.logoutAll()
+                    userDao.setLoggedIn(s.username)
                     _state.value = _state.value.copy(
                         isLoading = false,
                         message = "ورود موفقیت‌آمیز بود."
@@ -50,7 +54,6 @@ class LoginViewModel(
                         message = res.message
                     )
                 }
-            }
-        }
+            }        }
     }
 }

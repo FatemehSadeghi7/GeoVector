@@ -14,9 +14,7 @@ data class JalaliDate(val jy: Int, val jm: Int, val jd: Int) {
 
 data class GregorianDate(val gy: Int, val gm: Int, val gd: Int)
 
-/**
- * Jalaali → Gregorian conversion (based on the widely-used jalaali algorithm).
- */
+
 object JalaliConverter {
 
     private val breaks = intArrayOf(
@@ -91,9 +89,6 @@ object JalaliConverter {
         return (gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0)
     }
 
-    /**
-     * Convert a Jalali date to epochMillis at noon (12:00) local time to avoid DST edge cases.
-     */
     fun jalaliToEpochMillis(j: JalaliDate): Long {
         val g = jalaliToGregorian(j)
         val cal: Calendar = GregorianCalendar(g.gy, g.gm - 1, g.gd, 12, 0, 0)
@@ -101,9 +96,7 @@ object JalaliConverter {
         return cal.timeInMillis
     }
 
-    /**
-     * Age from birthdate (epochMillis) based on local calendar date.
-     */
+
     fun computeAgeFromEpochMillis(birthDateMillis: Long): Int {
         val now = Calendar.getInstance()
         val dob = Calendar.getInstance().apply { timeInMillis = birthDateMillis }

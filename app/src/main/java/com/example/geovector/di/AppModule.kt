@@ -32,4 +32,10 @@ object AppModule {
 
     fun provideLoginUseCase(context: Context) =
         LoginUserUseCase(provideAuthRepository(context))
+
+    fun provideLocationDao(context: Context) =
+        provideDatabase(context).locationDao()
+
+    fun provideUserDao(context: Context) =
+        provideDatabase(context).userDao()
 }

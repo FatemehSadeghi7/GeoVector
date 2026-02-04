@@ -11,7 +11,8 @@ data class UserEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val fullName: String,
     val age: Int,
-    val birthDateMillis: Long,   // تاریخ تولد به میلی‌ثانیه (epoch)
+    val birthDateMillis: Long,
     val username: String,
-    val passwordHash: String
+    val passwordHash: String,
+    val isLoggedIn: Boolean = false
 )

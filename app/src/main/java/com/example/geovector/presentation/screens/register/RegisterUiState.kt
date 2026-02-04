@@ -32,7 +32,6 @@ class RegisterViewModel(
     }
 
     fun onAgeChange(v: String) {
-        // فقط عددی (اختیاری)
         val cleaned = v.filter { it.isDigit() }
         _state.value = _state.value.copy(age = cleaned, message = null)
     }
@@ -53,21 +52,17 @@ class RegisterViewModel(
         val millis = JalaliConverter.jalaliToEpochMillis(j)
         val computedAge = JalaliConverter.computeAgeFromEpochMillis(millis)
 
-        // اگر می‌خوای سن خودکار ست شود:
         _state.value = _state.value.copy(
             birthDateMillis = millis,
             age = computedAge.toString(),
             message = null
         )
 
-        // اگر نمی‌خوای خودکار ست شود، این نسخه را جایگزین کن:
-        // _state.value = _state.value.copy(birthDateMillis = millis, message = null)
     }
 
 
     fun submit(onSuccess: () -> Unit) {
         val s = _state.value
-       // val ageInt = s.age.toIntOrNull() ?: -1
 
         viewModelScope.launch {
             _state.value = s.copy(isLoading = true, message = null)
